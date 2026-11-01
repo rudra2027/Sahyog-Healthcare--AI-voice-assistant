@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sahyog · Front desk console</title>
+  <meta name="robots" content="noindex">
+  <script>document.documentElement.classList.add("js");</script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230a7ea4'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='white' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css?v=7">
+  <link rel="stylesheet" href="/static/portal.css?v=7">
+  <link rel="stylesheet" href="/static/bot.css?v=7">
+  <link rel="stylesheet" href="/static/desk.css?v=7">
+</head>
+<body data-portal="desk" class="console">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cross" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+</svg>
+
+<div class="gate" id="gate" hidden>
+  <div class="card">
+    <span class="logo"><svg class="icon"><use href="#i-cross"/></svg></span>
+    <h1>Front desk console</h1>
+    <p>Sign in with your staff account to manage bookings, doctors and patients.</p>
+    <button class="btn" id="gateBtn" type="button">Sign in</button>
+  </div>
+</div>
+
+<div class="shell">
+  <aside class="side" aria-label="Console">
+    <a class="side-brand" href="/desk"><span class="logo"><svg class="icon"><use href="#i-cross"/></svg></span><span>Sahyog<small>Front desk console</small></span></a>
+    <nav class="side-nav" id="sideNav">
+      <button data-view="board" class="on"><i>▦</i>Day board</button>
+      <button data-view="appts"><i>☰</i>Appointments</button>
+      <button data-view="patients"><i>☺</i>Patients</button>
+      <button data-view="tickets"><i>✉</i>Tickets <b class="count" id="ticketCount" hidden></b></button>
+      <button data-view="audit" id="auditNav" hidden><i>⚖</i>Audit trail</button>
+    </nav>
+    <div class="side-foot">
+      <p class="side-hint">Ask the assistant to move a booking, change a doctor or block a doctor's day. It always asks before it changes anything.</p>
+      <button class="btn small" id="askBtn" type="button">Ask the assistant</button>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <header class="topbar" id="nav">
+      <div><p class="eyebrow" id="today"></p><h1 id="viewTitle">Day board</h1></div>
+      <div class="daybar" id="daybar" role="group" aria-label="Day">
+        <button data-offset="0" class="on">Today</button><button data-offset="1">Tomorrow</button><button data-offset="2" id="day2"></button>
+      </div>
+      <div class="nav-tools"></div>
+    </header>
+
+    <main>
+      <div class="kpis" id="kpis"></div>
+      <div id="view"></div>
+    </main>
+  </div>
+</div>
+
+<div class="modal-back" id="modal" hidden><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="/static/auth.js?v=7"></script>
+<script src="/static/bot.js?v=7"></script>
+<script src="/static/portal.js?v=7"></script>
+<script src="/static/desk.js?v=7"></script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+/* =====================================================================
+   Sahyog assistant widget (bottom-right bubble on every page)
+   Sections:  1 launcher  2 greeting bubble  3 panel  4 the bot drawing + its animations
+              5 chat inside the panel  6 sign-in window  7 small screens + reduced motion
+   Colours come from the page's tokens (--accent, --surface...) so light and dark mode just work.
+   Each bot sets its own --h (hue) from its seed, so every person's bot has its own colour.
+   ===================================================================== */
+
+.sb { --h: 200; position: fixed; right: max(20px, env(safe-area-inset-right)); bottom: max(20px, env(safe-area-inset-bottom)); z-index: 70; font-family: var(--font); }
+
+/* ---------- 1. launcher: the round button with the bot ---------- */
+.sb-launch { position: relative; width: 72px; height: 72px; border: 0; padding: 0; border-radius: 50%; cursor: pointer;
+  background: color-mix(in srgb, hsl(var(--h) 80% 55%) 16%, var(--surface));
+  box-shadow: var(--shadow-lift), inset 0 0 0 2px color-mix(in srgb, hsl(var(--h) 80% 55%) 45%, transparent);
+  transition: transform .45s var(--ease), box-shadow .45s var(--ease); animation: sb-pop .8s var(--ease) both .4s; }
+.sb-launch:hover { transform: scale(1.09) rotate(-3deg); }
+.sb-launch:active { transform: scale(.95); }
+.sb-launch .sb-av { position: absolute; inset: 4px; width: calc(100% - 8px); height: calc(100% - 8px); }
+.sb.open .sb-launch { transform: scale(.0); opacity: 0; pointer-events: none; }
+/* two soft rings that pulse out of the launcher, like a "call me" ripple */
+.sb-launch::before, .sb-launch::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid hsl(var(--h) 80% 55% / .5); animation: sb-ripple 2.8s ease-out infinite; pointer-events: none; }
+.sb-launch::after { animation-delay: 1.4s; }
+.sb[data-state="speaking"] .sb-launch::before, .sb[data-state="speaking"] .sb-launch::after { animation-duration: 1.1s; }
+.sb-dot { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--ok); border: 3px solid var(--surface); }
+@keyframes sb-ripple { from { transform: scale(1); opacity: .9; } to { transform: scale(1.75); opacity: 0; } }
+@keyframes sb-pop { from { transform: scale(0) rotate(-20deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+
+/* ---------- 2. greeting bubble that appears next to the launcher (like a shop assistant waving) ---------- */
+.sb-greet { position: absolute; right: 0; bottom: 88px; width: 252px; padding: 14px 40px 14px 16px; border-radius: 20px 20px 4px 20px; background: var(--surface); border: 1px solid var(--line);
+  box-shadow: var(--shadow-lift); font-size: 15px; line-height: 1.4; cursor: pointer; animation: sb-greet-in .6s var(--ease) both; }
+.sb-greet[hidden] { display: none; }
+.sb-greet b { display: block; font-size: 13px; color: var(--accent); margin-bottom: 2px; }
+.sb-greet-x { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 18px; line-height: 1; }
+.sb-greet-x:hover { background: var(--surface-2); }
+.sb.open .sb-greet { display: none; }
+@keyframes sb-greet-in { from { transform: translateY(14px) scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- 3. the chat panel ---------- */
+.sb-panel { position: absolute; right: 0; bottom: 0; width: min(392px, calc(100vw - 24px)); height: min(680px, calc(100dvh - 40px)); display: flex; flex-direction: column; overflow: hidden;
+  border-radius: 28px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(10, 40, 60, .28);
+  transform-origin: 100% 100%; transform: scale(.4) translateY(30px); opacity: 0; visibility: hidden;
+  transition: transform .5s var(--ease), opacity .3s, visibility 0s .5s; }
+.sb.open .sb-panel { transform: none; opacity: 1; visibility: visible; transition: transform .5s var(--ease), opacity .3s, visibility 0s; }
+.sb-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px 0; }
+.sb-title { flex: 1; min-width: 0; }
+.sb-title b { display: block; font-size: 16px; letter-spacing: -.01em; }
+.sb-title span { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.sb-title span::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.sb[data-state="speaking"] .sb-title span::before, .sb[data-state="listening"] .sb-title span::before { background: var(--accent); animation: sb-blinkdot .6s infinite alternate; }
+.sb[data-state="thinking"] .sb-title span::before { background: var(--warn); animation: sb-blinkdot .6s infinite alternate; }
+@keyframes sb-blinkdot { to { opacity: .25; } }
+.sb-iconbtn { width: 34px; height: 34px; border: 0; border-radius: 50%; display: grid; place-items: center; background: transparent; color: var(--muted); transition: background .2s, color .2s, transform .3s var(--ease); }
+.sb-iconbtn:hover { background: var(--surface-2); color: var(--ink); transform: scale(1.1); }
+.sb-iconbtn.off { color: var(--danger); }
+.sb-iconbtn.spin:active svg { transform: rotate(180deg); }
+.sb-iconbtn svg { transition: transform .5s var(--ease); }
+
+/* the big bot at the top of the panel; sound rings grow with the loudness of the voice */
+.sb-stage { position: relative; height: 172px; padding-bottom: 14px; flex: none; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 55%, color-mix(in srgb, hsl(var(--h) 85% 55%) 24%, var(--surface)), var(--surface) 72%); }
+.sb-stage .sb-av { width: 118px; height: 118px; position: relative; z-index: 2; cursor: pointer; }
+.sb-ring { position: absolute; left: 50%; top: 50%; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; border: 2px solid hsl(var(--h) 85% 55% / .45); opacity: 0; transform: scale(.9); pointer-events: none; }
+.sb[data-state="speaking"] .sb-ring { opacity: calc(.15 + var(--level, 0) * .9); transform: scale(calc(1 + var(--level, 0) * .55)); }
+.sb[data-state="speaking"] .sb-ring:nth-child(2) { transform: scale(calc(1.2 + var(--level, 0) * .85)); opacity: calc(.08 + var(--level, 0) * .5); }
+.sb[data-state="listening"] .sb-ring { opacity: .5; animation: sb-listen 1.3s ease-out infinite; }
+.sb[data-state="listening"] .sb-ring:nth-child(2) { animation-delay: .65s; }
+@keyframes sb-listen { from { transform: scale(.9); opacity: .7; } to { transform: scale(1.7); opacity: 0; } }
+.sb-caption { position: absolute; left: 14px; right: 14px; bottom: 4px; text-align: center; font-size: 12px; line-height: 1.25; color: var(--muted); min-height: 18px; z-index: 3; }
+
+/* ---------- 4. the bot drawing (an SVG made fresh from the seed) and how it moves ---------- */
+.sb-av { --mouth: 0; --lx: 0; --ly: 0; display: block; overflow: visible; }
+.sb-float { animation: sb-float var(--float, 3.4s) ease-in-out infinite; animation-delay: var(--delay, 0s); transform-box: fill-box; transform-origin: 50% 100%; }
+.sb-tilt { animation: sb-tilt var(--tilt, 7s) ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 70%; }
+.sb-look { transform: translate(calc(var(--lx) * 1px), calc(var(--ly) * 1px)); transition: transform .25s var(--ease); }
+.sb-eyes { animation: sb-blink var(--blink, 4s) infinite; transform-box: fill-box; transform-origin: center; }
+.sb-mouth { transform-box: fill-box; transform-origin: center; transform: scaleY(calc(.28 + var(--mouth) * 2.1)); transition: transform .05s linear; }
+.sb-glow { transition: filter .3s; }
+.sb[data-state="speaking"] .sb-glow, .sb[data-state="listening"] .sb-glow { animation: sb-glow .45s ease-in-out infinite alternate; }
+.sb[data-state="speaking"] .sb-tilt { animation: sb-talk .5s ease-in-out infinite alternate; }
+.sb[data-state="thinking"] .sb-tilt { animation: sb-think 1.2s ease-in-out infinite; }
+.sb[data-state="thinking"] .sb-look { --lx: 3; --ly: -3; }
+.sb-arm { transform-box: fill-box; transform-origin: 50% 0; }
+.sb:not(.open) .sb-wave { animation: sb-wave 2.4s ease-in-out 1.6s 2; }
+@keyframes sb-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes sb-tilt { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-3deg); } 70% { transform: rotate(3deg); } }
+@keyframes sb-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
+@keyframes sb-glow { from { opacity: .75; } to { opacity: 1; filter: drop-shadow(0 0 4px currentColor); } }
+@keyframes sb-talk { from { transform: rotate(-2.5deg) translateY(0); } to { transform: rotate(2.5deg) translateY(-2px); } }
+@keyframes sb-think { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg) translateY(-1px); } }
+@keyframes sb-wave { 0%, 100% { transform: rotate(0); } 20%, 60% { transform: rotate(-28deg); } 40%, 80% { transform: rotate(10deg); } }
+
+/* ---------- 5. chat inside the panel ---------- */
+.sb-msgs { flex: 1; overflow-y: auto; padding: 12px 14px 4px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
+.sb-msgs > * { flex: none; }
+.sb-b { max-width: 86%; padding: 10px 14px; border-radius: 18px; font-size: 14.5px; line-height: 1.42; animation: sb-in .4s var(--ease) both; overflow-wrap: anywhere; }
+.sb-b.bot { align-self: flex-start; background: var(--surface-2); border-bottom-left-radius: 5px; }
+.sb-b.user { align-self: flex-end; background: var(--accent); color: var(--on-accent); border-bottom-right-radius: 5px; }
+.sb-b.emergency { background: color-mix(in srgb, var(--danger) 14%, var(--surface)); border: 1.5px solid var(--danger); }
+.sb-b .src { display: inline-block; margin: 6px 4px 0 0; padding: 2px 9px; border-radius: 980px; font-size: 11.5px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); }
+.sb-b .sb-link { margin-top: 8px; }
+.sb-typing i { display: inline-block; width: 7px; height: 7px; margin: 0 2px; border-radius: 50%; background: var(--muted); animation: sb-bounce 1s infinite; }
+.sb-typing i:nth-child(2) { animation-delay: .15s; } .sb-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes sb-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-5px); opacity: 1; } }
+@keyframes sb-in { from { transform: translateY(8px) scale(.97); opacity: 0; } to { transform: none; opacity: 1; } }
+.sb-opts { display: flex; flex-direction: column; gap: 8px; }
+.sb-opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); animation: sb-in .45s var(--ease) both; transition: transform .3s var(--ease), box-shadow .3s; }
+.sb-opt:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.sb-opt b { display: block; font-size: 14px; } .sb-opt small { color: var(--muted); font-size: 12.5px; }
+.sb-chips { display: flex; gap: 8px; padding: 6px 14px 8px; overflow-x: auto; scrollbar-width: none; flex: none; }
+.sb-chips::-webkit-scrollbar { display: none; }
+.sb-chip { flex: none; padding: 7px 13px; border-radius: 980px; border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); background: transparent; color: var(--accent); font-size: 13.5px; font-weight: 600; transition: background .2s, transform .3s var(--ease); }
+.sb-chip:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); transform: translateY(-2px); }
+.sb-form { display: flex; align-items: center; gap: 8px; padding: 8px 12px 14px; flex: none; }
+.sb-form input { flex: 1; min-width: 0; height: 44px; padding: 0 16px; border-radius: 980px; border: 1px solid var(--line); background: var(--surface-2); font-size: 15px; }
+.sb-form input:focus { outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); border-color: transparent; }
+.sb-round { width: 44px; height: 44px; flex: none; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--on-accent); transition: transform .3s var(--ease); }
+.sb-round:hover { transform: scale(1.08); } .sb-round:active { transform: scale(.94); }
+.sb-round.mic { background: var(--surface-2); color: var(--accent); border: 1px solid var(--line); }
+.sb-round.mic.listening { background: var(--danger); color: #fff; animation: sb-listen-btn 1s infinite; }
+@keyframes sb-listen-btn { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 50%, transparent); } 50% { box-shadow: 0 0 0 10px transparent; } }
+
+/* ---------- 6. sign-in window and the nav button ---------- */
+.auth-back { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px; background: rgba(8, 20, 28, .5); backdrop-filter: blur(8px); opacity: 0; visibility: hidden; transition: opacity .3s, visibility 0s .3s; }
+.auth-back.open { opacity: 1; visibility: visible; transition: opacity .3s; }
+.auth-card { width: min(420px, 100%); padding: 28px 26px 24px; border-radius: 28px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, .35); transform: translateY(20px) scale(.96); transition: transform .5s var(--ease); }
+.auth-back.open .auth-card { transform: none; }
+.auth-card .sb-av { width: 84px; height: 84px; margin: -6px auto 6px; }
+.auth-card h3 { text-align: center; font-size: 24px; letter-spacing: -.02em; }
+.auth-card .sub { text-align: center; color: var(--muted); font-size: 14.5px; margin: 4px 0 16px; }
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 980px; background: var(--surface-2); margin-bottom: 14px; }
+.auth-tabs button { border: 0; padding: 9px; border-radius: 980px; background: transparent; font-weight: 600; font-size: 14.5px; color: var(--muted); transition: background .25s, color .25s; }
+.auth-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+.auth-card label { display: block; font-size: 13px; font-weight: 600; margin: 10px 0 5px; color: var(--muted); }
+.auth-card input { width: 100%; height: 46px; padding: 0 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); font-size: 16px; }
+.auth-card select { width: 100%; height: 46px; padding: 0 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); font-size: 16px; }
+.auth-card [hidden] { display: none; }
+.auth-card input:focus { outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); border-color: transparent; }
+.auth-card .btn { width: 100%; margin-top: 16px; }
+.auth-msg { min-height: 20px; margin-top: 10px; font-size: 13.5px; text-align: center; color: var(--danger); }
+.auth-msg.ok { color: var(--ok); }
+.auth-x { position: absolute; }
+.auth-note { margin-top: 12px; text-align: center; font-size: 12.5px; color: var(--muted); }
+.nav-auth { display: inline-flex; align-items: center; gap: 8px; }
+.nav-auth .who { font-size: 13.5px; font-weight: 600; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-auth .who:empty { display: none; }
+
+/* ---------- 7. small screens + reduced motion ---------- */
+@media (max-width: 520px) {
+  .sb { right: 14px; bottom: 14px; }
+  .sb-panel { position: fixed; inset: 8px; width: auto; height: auto; border-radius: 24px; }
+  .sb-greet { width: 220px; }
+  .nav-auth .who { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sb *, .sb *::before, .sb *::after, .auth-back, .auth-card { animation: none !important; transition-duration: .01ms !important; }
+}
+
+/* ---------- 8. keep the top bar tidy now that it also holds the sign-in button ---------- */
+.nav-links a, .nav-auth .btn, .persona, .nav-tools .pill { white-space: nowrap; }
+.nav { gap: 16px; }
+@media (max-width: 1180px) { .nav-links { display: none; } .nav-tools { margin-left: auto; } }
+
+/* ---------- 9. microphone switch: on = soft pulse, muted = grey with a red slash ---------- */
+.sb-round.mic { position: relative; }
+.sb-round.mic:not(.off):not(.listening) { color: var(--accent); }
+.sb-round.mic.off { color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, var(--surface-2)); }
+.sb-round.mic.listening { background: var(--accent); color: var(--on-accent); animation: sb-mic-on 1.4s ease-in-out infinite; }
+@keyframes sb-mic-on { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); } 50% { box-shadow: 0 0 0 11px transparent; } }
+
+/* the ring around the mic button grows with how loud YOU are (set from JavaScript as --ml) */
+.sb-round.mic::after { content: ""; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid var(--accent); opacity: calc(var(--ml, 0) * 1.2); transform: scale(calc(1 + var(--ml, 0) * .5)); pointer-events: none; }

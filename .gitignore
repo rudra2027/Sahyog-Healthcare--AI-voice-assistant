@@ -1,0 +1,46 @@
+# --- secrets: NEVER commit these -------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Python ------------------------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- local data (patient rows, Supabase user ids, uploaded reports) -------------------
+data/
+*.db
+*.db-*
+*.sqlite*
+uploads/
+
+# --- logs and run output ------------------------------------------------------------
+*.log
+install.log
+loadtest/report*
+qa/shots/
+qa/e2e_results.json
+qa/e2e_run*.log
+qa/__pycache__/
+
+# --- local tooling and scratch files ---------------------------------------------------
+.claude/
+.vscode/
+.idea/
+chk*.js
+shot.py
+fig*.png
+gen_graph.py
+export/
+pdfbuild/
+sahyog-film.html
+sahyog.txt
+tmp_*/
+tools_tmp_*.py

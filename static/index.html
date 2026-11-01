@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sahyog Care Companion</title>
+  <meta name="description" content="Talk to your hospital. Find a doctor, book, and ask about your reports, by voice.">
+  <script>document.documentElement.classList.add("js"); // lets CSS know scripts are running (used by the scroll reveals)</script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230a7ea4'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='white' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css?v=6">
+  <link rel="stylesheet" href="/static/bot.css?v=6">
+</head>
+<body data-portal="patient">
+
+<!-- Icon sprite: every icon on the page is drawn from here with <use href="#i-name"> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cross" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-steth" viewBox="0 0 24 24"><path d="M6 3v6a4 4 0 0 0 8 0V3M10 13v2a5 5 0 0 0 10 0v-1"/><circle cx="20" cy="12" r="2"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 5 2V4a3 3 0 0 0-2 0zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-5 2V4a3 3 0 0 1 2 0z"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></symbol>
+</svg>
+
+<!-- ======================= NAVIGATION ======================= -->
+<header class="nav" id="nav">
+  <a class="brand" href="#top"><span class="logo"><svg class="icon"><use href="#i-cross"/></svg></span>Sahyog</a>
+  <nav class="nav-links" aria-label="Sections">
+    <a href="#features">Overview</a><a href="#care">Care</a><a href="#visits">My visits</a><a href="#records">Records</a><a href="#doctors">Doctors</a>
+  </nav>
+  <div class="nav-tools"></div>
+</header>
+
+<main>
+<!-- ======================= HERO ======================= -->
+<section class="hero" id="top">
+  <div class="hero-copy">
+    <p class="eyebrow reveal">Sahyog Care Companion</p>
+    <h1 class="reveal" style="--d:80ms">Care, <span class="grad">without the wait.</span></h1>
+    <p class="lead reveal" style="--d:160ms">Say what is wrong. Sahyog finds the right doctor, books the visit, explains your reports and drafts your doctor's notes. By voice, in seconds, with a human always in charge of anything clinical.</p>
+    <div class="hero-cta reveal" style="--d:240ms">
+      <a class="btn" href="#care" id="heroTalk"><svg class="icon"><use href="#i-mic"/></svg>Talk to Sahyog</a>
+      <a class="btn ghost" href="#doctors">Meet the doctors</a>
+    </div>
+    <div class="hero-facts reveal" style="--d:320ms">
+      <div class="fact"><b>0</b><span>phone calls to book</span></div>
+      <div class="fact"><b>112</b><span>emergencies are always put first</span></div>
+      <div class="fact"><b>24/7</b><span>help, by voice or text</span></div>
+    </div>
+  </div>
+  <div class="hero-device" id="heroDevice">
+    <div class="device">
+      <div class="device-screen">
+        <div class="device-top"><span class="status-dot"></span>Sahyog Companion</div>
+        <div id="heroChat" style="display:flex;flex-direction:column;gap:10px"></div>
+      </div>
+    </div>
+  </div>
+  <!-- the heartbeat line that draws itself along the bottom -->
+  <svg class="ecg" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 70 H140 L160 70 L175 30 L195 110 L215 50 L232 70 H420 L440 70 L455 30 L475 110 L495 50 L512 70 H700 L720 70 L735 30 L755 110 L775 50 L792 70 H980 L1000 70 L1015 30 L1035 110 L1055 50 L1072 70 H1200"/>
+  </svg>
+</section>
+
+<!-- ======================= NUMBERS ======================= -->
+<section class="section soft" aria-label="Why this matters">
+  <div class="stats">
+    <div class="stat card reveal"><b data-count="41" data-suffix="%">0</b><span>of bookings still made by phone</span></div>
+    <div class="stat card reveal" style="--d:100ms"><b data-count="9000" data-suffix="">0</b><span>appointments a day, two cities</span></div>
+    <div class="stat card reveal" style="--d:200ms"><b data-count="30" data-suffix="">0</b><span>doctors across two cities</span></div>
+    <div class="stat card reveal" style="--d:300ms"><b data-count="3" data-suffix=" min">0</b><span>to book, with Sahyog</span></div>
+  </div>
+</section>
+
+<!-- ======================= FEATURE CAROUSEL ======================= -->
+<section class="section" id="features">
+  <div class="section-head reveal">
+    <p class="eyebrow">Everything in one conversation</p>
+    <h2>One assistant. Every step.</h2>
+    <p class="lead">From the first symptom to the booked visit, in one conversation.</p>
+  </div>
+  <div class="carousel reveal" id="featureCarousel">
+    <div class="track" id="featureTrack">
+      <article class="card slide g1"><div><svg class="icon icon-big"><use href="#i-steth"/></svg><h3>Find my doctor</h3><p>Describe how you feel in your own words. Sahyog finds the right specialist and offers three doctors with their next free time.</p></div><span class="tag">Booking</span></article>
+      <article class="card slide g2"><div><svg class="icon icon-big"><use href="#i-file"/></svg><h3>Ask about my reports</h3><p>Upload a report, then ask about it in plain words. Every answer shows which page it came from, and only you can see your records.</p></div><span class="tag">Reports</span></article>
+      <article class="card slide g4"><div><svg class="icon icon-big"><use href="#i-shield"/></svg><h3>Safe by design</h3><p>Emergency symptoms are sent to the right help straight away. Sahyog never diagnoses and never suggests a dose. A person is always in charge.</p></div><span class="tag">Safety</span></article>
+      <article class="card slide g5"><div><svg class="icon icon-big"><use href="#i-brain"/></svg><h3>It remembers you</h3><p>Your usual clinic and how you like to be helped, so the next visit takes seconds.</p></div><span class="tag">Personal</span></article>
+    </div>
+    <div class="car-ui">
+      <button class="round" id="carPrev" aria-label="Previous"><svg class="icon"><use href="#i-left"/></svg></button>
+      <div class="dots" id="carDots" role="tablist" aria-label="Slides"></div>
+      <button class="round" id="carNext" aria-label="Next"><svg class="icon"><use href="#i-right"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CARE: THE CHAT ======================= -->
+<section class="section soft" id="care">
+  <div class="section-head reveal">
+    <p class="eyebrow">Find my doctor</p>
+    <h2>Just say what's wrong.</h2>
+    <p class="lead">Just talk, or type. Tell Sahyog what you feel and it will find the right doctor.</p>
+  </div>
+  <div class="care-grid">
+    <div class="phone reveal">
+      <div class="phone-top"><span class="status-dot"></span><span>Sahyog</span></div>
+      <div class="messages" id="messages" aria-live="polite"></div>
+      <div class="chips" id="quickChips">
+        <button class="chip" data-q="Dull lower back pain for three weeks, worse after long sitting. No fever, no weakness in the legs.">Back pain for 3 weeks</button>
+        <button class="chip" data-q="I have had a dull ache in my left arm and some breathlessness since this morning.">Chest and arm pain</button>
+        <button class="chip" data-q="What does my report say about cholesterol?">My cholesterol report</button>
+        <button class="chip" data-q="I need to see someone, something is wrong">Something is wrong</button>
+      </div>
+      <form class="composer" id="composer">
+        <input id="msgInput" autocomplete="off" placeholder="Describe your symptoms..." aria-label="Message">
+        <button class="send" aria-label="Send"><svg class="icon"><use href="#i-send"/></svg></button>
+      </form>
+    </div>
+    <aside class="reveal" style="--d:120ms">
+      <div class="card side-card">
+        <h3>Voice</h3>
+        <div class="row"><label for="speakToggle">Read the replies aloud</label><input type="checkbox" class="switch" id="speakToggle" checked></div>
+        <p id="voiceNote" style="color:var(--muted);font-size:13px;margin-top:6px"></p>
+      </div>
+      <div class="card side-card">
+        <h3>Need help right now?</h3>
+        <p style="color:var(--muted);font-size:15px">In an emergency call <b>112</b>. Sahyog will also tell you this if you describe warning signs such as chest pain.</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ======================= MY VISITS ======================= -->
+<section class="section soft" id="visits">
+  <div class="section-head reveal">
+    <p class="eyebrow">My visits</p>
+    <h2>Your care, in one place.</h2>
+    <p class="lead">What is coming up, what already happened, and any follow-up your doctor asked for.</p>
+  </div>
+  <div class="visits-wrap reveal">
+    <div class="tabs" id="visitTabs" role="tablist"><button class="tab on" data-v="upcoming">Coming up</button><button class="tab" data-v="past">History</button></div>
+    <div id="visitList" class="visit-list"></div>
+    <div id="visitNotes"></div>
+  </div>
+</section>
+
+<!-- ======================= RECORDS ======================= -->
+<section class="section" id="records">
+  <div class="section-head reveal">
+    <p class="eyebrow">Ask my records</p>
+    <h2>Your reports, in plain words.</h2>
+    <p class="lead">Upload a PDF or text report. It is read in the background, then you can ask questions. Every answer shows where it came from.</p>
+  </div>
+  <div class="rec-grid">
+    <div class="card panel reveal">
+      <h3>Your documents</h3>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Upload a report">
+        <svg class="icon"><use href="#i-upload"/></svg>
+        <div><b>Drop a report here</b></div><small>or click to choose a .pdf or .txt file</small>
+        <input type="file" id="fileInput" accept=".pdf,.txt" hidden>
+      </div>
+      <ul class="doclist" id="docList"></ul>
+    </div>
+    <div class="card panel reveal" style="--d:120ms">
+      <h3>Ask a question</h3>
+      <div class="inline-form" style="margin-top:0"><input class="field" id="recQ" value="What does my report say about cholesterol?" aria-label="Question about a record"><button class="btn small" id="recAsk">Ask</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="chip" data-rq="What was the HbA1c result?">HbA1c result</button>
+        <button class="chip" data-rq="What dose of atorvastatin should I take?">Ask for a dose</button>
+      </div>
+      <div id="recAnswer"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= DOCTORS ======================= -->
+<section class="section soft" id="doctors">
+  <div class="section-head reveal">
+    <p class="eyebrow">Our doctors</p>
+    <h2>Doctors you can book today.</h2>
+    <p class="lead">Tap a doctor to see their next free times.</p>
+  </div>
+  <div class="filters" id="docFilters"></div>
+  <div class="doc-grid" id="docGrid"></div>
+</section>
+
+</main>
+
+<footer>
+  <p>Sahyog Care Companion is a learning project. All people, hospitals and data are fictional. It does not give medical advice. In an emergency call 112.</p>
+</footer>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<!-- Sign-in library (pinned version), then our sign-in, the floating assistant, and the page itself -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="/static/auth.js?v=6"></script>
+<script src="/static/bot.js?v=6"></script>
+<script src="/static/app.js?v=6"></script>
+</body>
+</html>

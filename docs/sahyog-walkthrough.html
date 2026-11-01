@@ -1,0 +1,378 @@
+<title>Sahyog Care Companion Walkthrough</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a 16:9 SVG "video" stage on top, caption bar, transport controls, chapter chips below. */
+:root{
+  --bg:#f3f3f7; --surface:#ffffff; --ink:#1b1a26; --muted:#615f75; --line:#cdccd9;
+  --accent:#c2358f; --llm:#c2358f; --tool:#6a47d1; --human:#a8710f; --store:#0b8584; --alert:#d23b57;
+  --code:#6b6a80;
+  --stage:#fbfbfe;
+  --f-body:"Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d0c14; --surface:#1a1925; --ink:#ecebf5; --muted:#a09fb6; --line:#34324a;
+  --accent:#ec5db4; --llm:#ec5db4; --tool:#9d83ff; --human:#e7b04a; --store:#3fcfca; --alert:#ff6b86;
+  --code:#9795b0; --stage:#12111b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d0c14; --surface:#1a1925; --ink:#ecebf5; --muted:#a09fb6; --line:#34324a;
+  --accent:#ec5db4; --llm:#ec5db4; --tool:#9d83ff; --human:#e7b04a; --store:#3fcfca; --alert:#ff6b86;
+  --code:#9795b0; --stage:#12111b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);margin:0;
+  padding-block:16px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+header h1{font-size:clamp(20px,3vw,28px);margin:0;font-weight:800;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:70ch}
+.stagewrap{position:relative;background:var(--stage);border:1px solid var(--line);border-radius:14px;overflow:hidden;aspect-ratio:16/9}
+#stage{width:100%;height:100%;display:block}
+.prog{position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--line)}
+.prog i{display:block;height:100%;width:0;background:var(--accent)}
+.cap{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:14px;align-items:flex-start;min-height:84px}
+.cap .n{font:500 12px var(--f-mono);color:var(--muted);white-space:nowrap;padding-top:3px}
+.cap p{margin:0;font-size:clamp(15px,1.7vw,18px);line-height:1.45;min-width:0}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font:600 14px var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 13px;cursor:pointer}
+button:hover{border-color:var(--accent)} button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.main{background:var(--accent);border-color:var(--accent);color:#fff;min-width:92px}
+.sp{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font-size:13px;padding:6px 10px;color:var(--muted)}
+.chips button.on{color:#fff;background:var(--tool);border-color:var(--tool)}
+.hint{font-size:12px;color:var(--muted)}
+/* SVG */
+svg text{fill:var(--ink);font-family:var(--f-body)}
+.kick{font:500 14px var(--f-mono);fill:var(--accent)!important;letter-spacing:.12em}
+.ttl{font-weight:800;font-size:31px}
+.lb{font-weight:600;font-size:15px} .sb{font-size:12.5px;fill:var(--muted)!important}
+.tx{font-size:14.5px} .tm{font-size:14.5px;fill:var(--muted)!important}
+.big{font-weight:800;font-size:38px}
+.mono{font-family:var(--f-mono)!important;font-size:12.5px}
+.nd{rx:10;stroke-width:1.6;fill:color-mix(in srgb,var(--c) 15%,var(--surface));stroke:var(--c)}
+.k-code{--c:var(--code)}.k-llm{--c:var(--llm)}.k-tool{--c:var(--tool)}.k-human{--c:var(--human)}.k-store{--c:var(--store)}.k-alert{--c:var(--alert)}
+.k-ext{--c:var(--muted);stroke-dasharray:5 4}
+.ar{fill:none;stroke:var(--muted);stroke-width:1.8} .ar.dash{stroke-dasharray:6 5}
+.ar.hot{stroke:var(--accent);stroke-width:2.2}
+.ar.flow{stroke-dasharray:7 6;animation:fl 1s linear infinite}
+@keyframes fl{to{stroke-dashoffset:-13}}
+.dot{fill:var(--tool);opacity:.7}.hosp{fill:var(--accent);filter:drop-shadow(0 0 6px var(--accent))}
+.bound{fill:none;stroke:var(--human);stroke-width:2;stroke-dasharray:8 6}
+.e>*{opacity:0;transform:translateY(10px);transition:opacity .6s,transform .6s}
+.e.on>*{opacity:1;transform:none}
+.e.on>*:nth-child(2){transition-delay:.1s}.e.on>*:nth-child(3){transition-delay:.2s}.e.on>*:nth-child(4){transition-delay:.3s}
+.e.on>*:nth-child(5){transition-delay:.4s}.e.on>*:nth-child(6){transition-delay:.5s}.e.on>*:nth-child(7){transition-delay:.6s}
+.e.on>*:nth-child(n+8){transition-delay:.7s}
+.e.cur .nd{stroke-width:2.6}
+.nt .e>*{transition:none!important}.nt #tok{transition:none!important}
+#tok{transition:transform .9s cubic-bezier(.5,0,.2,1),opacity .4s;opacity:0}
+#tok circle{fill:var(--accent);filter:drop-shadow(0 0 8px var(--accent))}
+@media (prefers-reduced-motion:reduce){.e>*,#tok{transition:none!important}.ar.flow{animation:none}}
+@media (max-width:640px){.cap{flex-direction:column;gap:4px}.hint{display:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Sahyog Care Companion, explained as a walkthrough</h1>
+    <p>From the front-desk problem to the LangGraph workflows, memory and caching, and the requirements the client will test. It plays by itself; use the controls to pause, step or jump.</p>
+  </header>
+  <div class="stagewrap"><svg id="stage" viewBox="0 0 1280 720" role="img" aria-label="Animated diagram"></svg><div class="prog"><i id="pb"></i></div></div>
+  <div class="cap" aria-live="polite"><span class="n" id="cn"></span><p id="ct"></p></div>
+  <div class="ctl">
+    <button id="bps" title="Previous scene">⏮ Scene</button>
+    <button id="bp" title="Previous step (←)">◀ Step</button>
+    <button id="bplay" class="main" title="Space">⏸ Pause</button>
+    <button id="bn" title="Next step (→)">Step ▶</button>
+    <button id="bns" title="Next scene">Scene ⏭</button>
+    <span class="sp"></span>
+    <label class="hint" for="spd">Speed</label>
+    <select id="spd"><option value="0.7">0.7×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="hint">Keys: Space play/pause, ← → step, [ ] scene.</div>
+</div>
+
+<script>
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const t=(x,y,s,c='tx',a='start')=>`<text x="${x}" y="${y}" class="${c}" text-anchor="${a}">`+String(s).split('\n').map((l,i)=>`<tspan x="${x}" dy="${i?1.3:0}em">${esc(l)}</tspan>`).join('')+`</text>`;
+function box(x,y,w,h,label,k='code',sub=''){
+  const ls=label.split('\n'),n=ls.length,subs=sub?sub.split('\n'):[];
+  const tot=(n-1)*18+subs.length*15+(subs.length?3:0);
+  let y0=y+h/2-tot/2+5,o=`<g><rect class="nd k-${k}" x="${x}" y="${y}" width="${w}" height="${h}"/>`;
+  ls.forEach((l,i)=>o+=`<text x="${x+w/2}" y="${y0+i*18}" class="lb" text-anchor="middle">${esc(l)}</text>`);
+  subs.forEach((l,i)=>o+=`<text x="${x+w/2}" y="${y0+(n-1)*18+17+i*15}" class="sb" text-anchor="middle">${esc(l)}</text>`);
+  return o+'</g>';
+}
+const ar=(x1,y1,x2,y2,c='')=>`<path class="ar ${c}" d="M${x1} ${y1}L${x2} ${y2}" marker-end="url(#ah)"/>`;
+const arp=(d,c='')=>`<path class="ar ${c}" d="${d}" marker-end="url(#ah)"/>`;
+const legend=y=>[['code','plain code'],['llm','model call'],['tool','tool call'],['human','waits for a human'],['store','store']]
+  .map((a,i)=>`<g><rect class="nd k-${a[0]}" x="${48+i*170}" y="${y}" width="16" height="16" rx="4"/>${t(70+i*170,y+13,a[1],'sb')}</g>`).join('');
+function tile(x,y,w,h,v,l,k='code'){return `<g><rect class="nd k-${k}" x="${x}" y="${y}" width="${w}" height="${h}"/>${t(x+16,y+h/2+4,v,'big')}${t(x+16,y+h-14,l,'sb')}</g>`}
+function card(x,y,w,h,head,body,k='code',hs='lb'){return `<g><rect class="nd k-${k}" x="${x}" y="${y}" width="${w}" height="${h}"/>${t(x+14,y+26,head,hs)}${t(x+14,y+52,body,'tx')}</g>`}
+const S=[];
+
+/* 1 ---- client */
+function cluster(cx,cy,name,sub){let o='';
+  for(let i=0;i<11;i++){const a=i/11*6.283+.4,r=78+(i%3)*10;o+=`<circle cx="${cx+Math.cos(a)*r}" cy="${cy+Math.sin(a)*r*.8}" r="5" class="dot"/>`}
+  for(let i=0;i<3;i++){const a=i/3*6.283+1;o+=`<circle cx="${cx+Math.cos(a)*30}" cy="${cy+Math.sin(a)*24}" r="11" class="hosp"/>`}
+  return o+t(cx,cy+112,name,'lb','middle')+t(cx,cy+130,sub,'sb','middle')}
+S.push({n:'The client',k:'01 · THE CLIENT',h:'A front desk that stopped scaling',steps:[
+ {c:'Sahyog Health Network runs 6 hospitals and 22 clinics across Pune and Hyderabad. The client wants one shared platform across both cities. (The client is fictional.)',
+  s:cluster(150,290,'Pune','3 hospitals · 11 clinics')+cluster(330,500,'Hyderabad','3 hospitals · 11 clinics')+arp('M180 305Q270 380 305 430','dash')+t(370,400,'one shared platform','sb')},
+ {c:'The scale: 3.1M outpatient visits a year and 9,000 appointments a day. 18% of booked patients never arrive.',
+  s:tile(480,130,240,110,'3.1M','outpatient visits a year')+tile(740,130,240,110,'9,000','appointments a day')+tile(1000,130,230,110,'18%','booked but never arrive')},
+ {c:'The pain, in the client\'s own numbers: 41% of bookings still happen by phone, 2.4M report PDFs are scanned a year, and doctors spend 11 minutes of every consultation typing.',
+  s:tile(480,260,240,110,'41%','bookings made by phone','alert')+tile(740,260,240,110,'2.4M','report PDFs scanned a year','alert')+tile(1000,260,230,110,'11 min','typed per consultation','alert')},
+ {c:'So the board\'s mandate has three parts: take the phone out of booking, bring patients to their own records, and give the 11 minutes back to the doctor.',
+  s:box(480,410,240,80,'Patient books\nwithout a call','llm')+box(740,410,240,80,'Patient sees and\nquestions own records','llm')+box(1000,410,230,80,'Doctor gets a note\nto sign, not type','llm')},
+ {c:'Your job as the engineer: the client says what they WANT; you work out what they actually NEED. Every later slide is that translation.',
+  s:`<g><rect class="nd k-human" x="480" y="530" width="750" height="90"/>${t(505,566,'Requirement = what the client asks. Need = what you find in discovery.','lb')}${t(505,594,'Example: "an AI doctor-finder" really needs a red-flag gate and human sign-off.','tx')}</g>`}
+]});
+
+/* 2 ---- outcomes */
+S.push({n:'What they buy',k:'02 · THE MANDATE',h:'Five outcomes, the lines around them',steps:[
+ {c:'Five outcomes the client is buying: book in under 3 minutes without a call; see and question your own records with citations; a doctor signs a note after at most 90 seconds of review; every AI output is traceable and reversible by a named human; compliant with India\'s DPDP Act.',
+  s:`<g><rect class="nd k-llm" x="48" y="130" width="420" height="520"/>${t(66,160,'OUTCOMES','kick')}${t(66,192,'1  Find the right doctor and book\n    in under 3 minutes, no phone call','tx')}${t(66,262,'2  See and question own records,\n    every answer cited and scoped','tx')}${t(66,332,'3  Doctor signs a note after at most\n    90 seconds of review','tx')}${t(66,402,'4  Every AI output is traceable,\n    auditable, reversible by a human','tx')}${t(66,472,'5  Runs under the DPDP Act, ABDM-ready,\n    path to on-premise handling','tx')}</g>`},
+ {c:'In scope: find-my-doctor triage and booking, records upload and Q&A, the consultation scribe, and shared identity, consent, audit and evaluation. Out of scope: billing, video visits, inpatient.',
+  s:`<g><rect class="nd k-store" x="490" y="130" width="340" height="250"/>${t(508,160,'IN SCOPE','kick')}${t(508,192,'• Find-my-doctor triage + booking\n• Record upload + questions\n• Consultation scribe, doctor signs\n• Shared platform: identity,\n   consent, audit, evaluation','tx')}</g><g><rect class="nd k-ext" x="490" y="400" width="340" height="250"/>${t(508,430,'OUT OF SCOPE','kick')}${t(508,462,'• Billing and insurance claims\n• Telemedicine video, wearables\n• Inpatient workflows (later)','tx')}</g>`},
+ {c:'The constraints shape the architecture: identified health data never leaves India, the LLM vendor must be swappable, hospital data comes read-only via FHIR, pharmacy stock is a nightly CSV, English first, and 1,400 requests an hour at the morning peak.',
+  s:`<g><rect class="nd k-human" x="850" y="130" width="380" height="520"/>${t(868,160,'CONSTRAINTS','kick')}${t(868,192,'• Identified data never leaves India\n\n• LLM vendor swappable,\n   no rewrite\n\n• Hospital system: FHIR R4,\n   read-only\n\n• Pharmacy stock: nightly CSV,\n   API promised later\n\n• English first; nothing in the\n   schema assumes English\n\n• Peak: 1,400 requests/hour','tx')}</g>`}
+]});
+
+/* 3 ---- RFP addendum */
+const rfp=[['Can it diagnose?','No. A red-flag gate runs before any match; wording guardrails on every answer.'],
+['Share records with family?','Yes, via a caregiver role. Consent is a table: scope, grantee, expiry.'],
+['Where does consultation audio go?','Deleted within 24h. Transcript and note are kept. Deletion writes an audit event.'],
+['Identified data to a public LLM?','Only de-identified text may cross. A scrubber sits on the egress path.'],
+['Where does stock data come from?','Nightly CSV now, API in ~6 months. One stock interface, two adapters.'],
+['Who approves AI-drafted notes?','The consulting doctor, every time. The graph interrupts before saving.'],
+['What volume?','9,000 appointments/day, 1,400 requests/hour. Async ingest, stateless API.']];
+S.push({n:'RFP rules',k:'03 · THE RFP ADDENDUM',h:'Seven answers that are really requirements',steps:[0,1,2,3].map(i=>({
+ c:i==0?'The client\'s Q&A addendum looks conversational but every answer is a design rule. Can it diagnose? No. So a red-flag gate runs first. Can families see records? Yes, so consent is a table with an expiry.':i==1?'Audio is processed and deleted within 24 hours while the transcript and note stay. Identified data never goes to a public LLM, so a scrubber sits at the border.':i==2?'Stock arrives as a nightly CSV today and an API later. So the graph only talks to one stock interface and never knows which adapter is live. Nothing auto-signs: the doctor approves every note.':'Volume is 9,000 appointments a day and 1,400 requests an hour at peak. That is why ingest is asynchronous and the API is stateless. Rule of thumb: every answer is a requirement wearing a conversational tone.',
+ s:(i==0?[0,1]:i==1?[2,3]:i==2?[4,5]:[6]).map(j=>{const col=j%4,row=j<4?0:1;return card(48+col*300,130+row*250,285,225,rfp[j][0],rfp[j][1].replace(/(.{1,30})(\s|$)/g,'$1\n').trim(),j<2||j==5?'alert':j==3?'human':'store','lb')}).join('')+(i==3?`<g><rect class="nd k-llm" x="948" y="380" width="285" height="225"/>${t(962,410,'How to read it','lb')}${t(962,438,'Each answer becomes a\n"So:" design rule. Your\nPRD cites the addendum\nline behind every rule.','tx')}</g>`:'')
+}))});
+
+/* 4 ---- personas */
+const pp=[['Priya, 34','Patient and caregiver','Needs: right specialist\ntonight, and yesterday\'s\nreport in plain words.','Fears: her mother\'s\nreports read by the\nwrong person.','llm'],
+['Dr. Rao','Cardiologist, 22 pts/day','Needs: a note he can\nsign in 90 seconds.','Fears: being on record\nfor a line the model\ninvented.','human'],
+['Meena','Front desk lead, 300 calls/day','Needs: fewer "which\ndoctor" calls, and a\nqueue she controls.','Fears: a bot booking\nthe wrong slot.','tool'],
+['Imran','Pharmacist, two counters','Needs: prescriptions that\nmatch stock before the\npatient walks over.','Fears: substitutions\ndecided by software.','store'],
+['Kavita','Compliance officer','Needs: "who saw this\nrecord" in one query.','Fears: identified data in\na public API log.','alert']];
+const pc=i=>{const p=pp[i],x=30+i*248;return `<g><rect class="nd k-${p[4]}" x="${x}" y="130" width="232" height="400"/>${t(x+14,164,p[0],'lb')}${t(x+14,184,p[1],'sb')}${t(x+14,230,p[2],'tx')}${t(x+14,350,p[3],'tm')}</g>`};
+S.push({n:'Personas',k:'04 · WHO IT SERVES',h:'Five people, one thing each must get',steps:[
+ {c:'Priya books for herself and her mother. Dr. Rao needs a note he can sign in 90 seconds. Both fear the AI putting something wrong or private on the record.',s:pc(0)+pc(1)},
+ {c:'Meena runs the front desk and wants a queue she still controls. Imran wants prescriptions checked against stock, with the substitution choice left to him. Kavita needs to answer "who saw this record" with one query.',s:pc(2)+pc(3)+pc(4)},
+ {c:'Design test for every feature: which of these five does it serve? If none, it is scope creep, and the client is not paying for it. That is why the front desk gets an override view and doctors get a signature gate.',
+  s:`<g><rect class="nd k-human" x="30" y="560" width="1220" height="80"/>${t(54,594,'Every epic names its persona. A feature that serves nobody on this page is out.','lb')}${t(54,620,'Front desk override queue · doctor signature gate · pharmacist keeps the substitute choice','tx')}</g>`}
+]});
+
+/* 5 ---- context */
+S.push({n:'System context',k:'05 · THE BIG PICTURE',h:'Who touches the Companion, and what it depends on',steps:[
+ {c:'Five kinds of people use it: the patient on web or app, the doctor on a console, the front desk, the pharmacy, and the compliance officer.',
+  s:['Patient (web / app)','Doctor console','Front desk','Pharmacy','Compliance officer'].map((n,i)=>box(48,140+i*100,220,66,n,'llm')).join('')},
+ {c:'In the middle is the one system you build: the Sahyog Care Companion. Every arrow follows the direction of the request.',
+  s:box(470,230,330,260,'Sahyog Care\nCompanion','tool','the system you build\nLangGraph agents + services')+[0,1,2,3,4].map(i=>ar(268,173+i*100,470,360+(i-2)*40,'hot')).join('')},
+ {c:'It depends on outside systems: the hospital system (FHIR, read-only), a pharmacy stock feed, an LLM API that only ever sees de-identified text, a speech-to-text engine, identity and OTP, an SMS gateway, and object and audit stores.',
+  s:[['Hospital system · FHIR R4, read-only','ext'],['Pharmacy stock feed · CSV or API','ext'],['LLM API · de-identified text only','human'],['Speech-to-text engine','ext'],['Identity, OTP and ABHA','ext'],['SMS gateway','ext'],['Object + audit stores','store']]
+   .map((a,i)=>box(980,120+i*80,250,56,a[0].split(' · ')[0],a[1],a[0].split(' · ')[1]||'')+ar(800,360,980,148+i*80,i==2?'hot dash':'dash')).join('')}
+]});
+
+/* 6 ---- two cases */
+S.push({n:'Two messages',k:'06 · TWO REAL MESSAGES',h:'The same entry point, two completely different paths',steps:[
+ {c:'Two real patient messages. Case A: "my mother (62) has a dull ache in her left arm and breathlessness since this morning, she has diabetes, which doctor?" Case B: "dull lower back pain for three weeks, worse after sitting, no fever."',
+  s:`<g><rect class="nd k-alert" x="48" y="130" width="570" height="130"/>${t(66,158,'CASE A · RED FLAG','kick')}${t(66,186,'"Hi, my mother (62) has had a dull ache in her left arm\nand some breathlessness since this morning. She has\ndiabetes. Which doctor should we see?"','tx')}</g><g><rect class="nd k-store" x="660" y="130" width="570" height="130"/>${t(678,158,'CASE B · ROUTINE','kick')}${t(678,186,'"Dull lower back pain for three weeks, worse after long\nsitting. No fever, no weakness in the legs."','tx')}</g>`},
+ {c:'Rules run first, in plain code. Case A: arm pain plus breathlessness, over 60, diabetic. A deterministic rule marks a red flag before any model is called. Case B matches no rule, so the model runs.',
+  s:box(48,290,570,70,'Rules fire: arm pain + breathlessness + age 60+ + diabetes','alert','plain code, no model involved')+box(660,290,570,70,'No red-flag rule matches, so the specialty match runs','llm','model against the validated crosswalk')},
+ {c:'Case A: booking is skipped, an emergency-desk ticket opens with the patient\'s contact, and the patient is told to call 112, without any diagnosis. Case B returns structured output: Orthopaedics, confidence 0.82, three doctors with their next free slot.',
+  s:box(48,390,570,70,'Hand-off: emergency-desk ticket + audit event','human','booking path never reached')+box(660,390,570,70,'{ specialty: "Orthopaedics", confidence: 0.82,\n  candidates: 3, next_slot_in: "18 hr" }','llm')},
+ {c:'Case A reply: urgent symptoms, call 112, a nurse will call you. It never names a condition. Case B pauses the graph at an interrupt until the patient picks a doctor. Low confidence (under 0.6) asks one clarifying question; two low turns hand the patient to the front desk.',
+  s:box(48,490,570,80,'Reply: "Call 112 or go to the nearest ER.\nI have alerted our emergency desk."','alert')+box(660,490,570,80,'interrupt() · run pauses in the checkpointer\nuntil the patient picks a doctor','human')+t(660,610,'confidence < 0.6 → one clarifying question, never a guess','tm')+t(660,634,'two low turns → hand to the front desk','tm')}
+]});
+
+/* 7 ---- W1 graph */
+const W1=i=>61+i*170,N=(i,l,k,s)=>box(W1(i),250,138,80,l,k,s),mid=i=>[W1(i)+69,290];
+const w1ar=i=>ar(W1(i)+138,290,W1(i+1),290);
+S.push({n:'W1 Find my doctor',k:'07 · WORKFLOW 1 · LANGGRAPH',h:'Find my doctor: the first graph you ship',steps:[
+ {c:'Workflow 1 is one LangGraph graph with shared state (messages, symptoms, age, red_flags, specialty, candidates, chosen_slot, booking_id, audit_ids). First node: intake collects symptoms and age.',tok:mid(0),
+  s:legend(150)+N(0,'intake','code','symptoms, age')},
+ {c:'Second node is the red-flag check, written as rules, not a prompt. Rules first, model second. If a flag is raised the graph skips everything and hands off to the ER desk.',tok:mid(1),
+  s:w1ar(0)+N(1,'red-flag\ncheck','code','rules')+box(W1(1),140,138,60,'ER hand-off','human','ticket + 112')+arp(`M${W1(1)+69} 250L${W1(1)+69} 202`,'dash')},
+ {c:'Only now does a model run: match specialty against the validated crosswalk. If confidence is low it loops back for exactly one more question, then matches again.',tok:mid(2),
+  s:w1ar(1)+N(2,'match\nspecialty','llm','crosswalk')+arp(`M${W1(2)+69} 330L${W1(2)+69} 388L${W1(0)+69} 388L${W1(0)+69} 332`,'dash')+t(W1(0)+80,380,'unclear: ask one more question (confidence < 0.6)','sb')},
+ {c:'Shortlist with tools: find doctors, check their next free slots, and score no-show risk. Tool calls hit the scheduling service; slot availability is cached for 30 seconds.',tok:mid(3),
+  s:w1ar(2)+N(3,'shortlist','tool','doctors, slots, risk')},
+ {c:'Present three options, then interrupt(). The run stops here. LangGraph writes the whole state into the Postgres checkpointer, the API returns the options to the app, and no process is holding anything in memory.',tok:mid(5),
+  s:w1ar(3)+N(4,'present\noptions','code')+w1ar(4)+N(5,'interrupt()','human','patient picks')+`<g><rect class="nd k-store" x="61" y="425" width="1158" height="46"/>${t(640,454,'Checkpointer (Postgres): state saved after every node, keyed by thread_id','lb','middle')}</g>`},
+ {c:'The patient picks a slot and the app calls resume. LangGraph restores the saved state, on any replica, and runs the last node: reserve the slot in one transaction, send the SMS, write an audit event.',tok:mid(6),
+  s:w1ar(5)+N(6,'book slot\n& notify','tool','idempotent')},
+ {c:'As an API this is stateless: POST /triage runs to the interrupt, the client sends POST /resume with slot_id later. The booking uses an idempotency key, so a retry cannot double-book.',tok:false,
+  s:[['POST /triage','code'],['graph runs to\ninterrupt()','tool'],['3 doctors +\nslots returned','code'],['POST /resume\n{slot_id}','human'],['reserve(slot)\none transaction','tool'],['SMS confirm\n+ audit','store']]
+    .map((a,i)=>box(60+i*198,540,170,70,a[0],a[1])+(i<5?ar(230+i*198,575,258+i*198,575):'')).join('')}
+]});
+
+/* 8 ---- W2 */
+const A2=i=>35+i*200,B2=i=>40+i*175;
+S.push({n:'W2 My records',k:'08 · WORKFLOW 2 · LANGGRAPH',h:'My records: ingest in the background, ask in real time',steps:[
+ {c:'Workflow 2 has two graphs. The ingest graph runs on a queue worker: upload received, parse the PDF (OCR as fallback), tag PHI with Presidio, chunk by section, embed in batches, then index and link to the patient.',tok:[A2(0)+80,206],
+  s:t(35,148,'A · INGEST GRAPH (worker, async)','kick')+[['upload\nreceived','code'],['parse PDF\nOCR fallback','tool'],['tag PHI\nPresidio','code'],['chunk by\nsection','code'],['embed\nbatches of 64','tool'],['index + link\nto patient','store']]
+    .map((a,i)=>box(A2(i),170,160,72,a[0],a[1])+(i<5?ar(A2(i)+160,206,A2(i+1),206):'')).join('')},
+ {c:'Two details matter. The token map from PHI tagging stays on-premise. And embeddings are cached by content hash, so re-uploading the same text costs nothing. The client sees a status, never an open HTTP connection.',tok:false,
+  s:t(A2(2),270,'token map stays on-prem','sb')+t(A2(4),270,'cache: skip if hash already embedded','sb')+t(A2(5)-20,270,'status: queued → ready','sb')},
+ {c:'The ask graph is interactive. Question plus patient_id comes in, a scope guard confirms the patient may read these records, then retrieval runs with the patient filter applied in SQL.',tok:[B2(0)+80,426],
+  s:t(40,370,'B · ASK GRAPH (request time)','kick')+[['question +\npatient_id','code'],['scope guard\nown records','code'],['retrieve\nSQL patient filter','store'],['grade\ncontext','llm'],['answer with\ncitations','llm'],['safety check\nno dx / dose','code'],['respond or\nhand off','human']]
+    .map((a,i)=>box(B2(i),390,150,72,a[0],a[1])+(i<6?ar(B2(i)+150,426,B2(i+1),426):'')).join('')},
+ {c:'Weak context triggers one wider search, then a hand-off. The answer must cite document and page; every citation is checked against the retrieved chunks. Asked for a diagnosis or a dose, it hands off to a doctor.',tok:[B2(6)+75,426],
+  s:t(B2(3)-20,500,'weak context: widen once,\nthen hand to doctor','sb')+t(B2(4)-10,540,'cites doc_id + page; each\ncitation verified','sb')+t(B2(5)-30,500,'asks for dose?\n→ doctor','sb')},
+ {c:'The key safety idea: the patient filter is a SQL WHERE clause, not a sentence in the prompt. A prompt can be argued with; a SQL filter cannot. A red-team PDF with hidden instructions is in the test set, and the test fails if the filter is removed.',tok:false,
+  s:`<g><rect class="nd k-alert" x="40" y="590" width="1200" height="82"/>${t(60,624,'WHERE patient_id = :auth_context.patient_id','mono')}${t(60,652,'Scope comes from the auth context, never from what the model typed. Scope leaks target: zero.','tx')}</g>`}
+]});
+
+/* 9 ---- W3 */
+const C3=i=>50+i*150;
+S.push({n:'W3 Scribe',k:'09 · WORKFLOW 3 · LANGGRAPH',h:'Consultation scribe: a graph that pauses for a signature',steps:[
+ {c:'Workflow 3 starts with the audio. A local speech-to-text engine turns it into a transcript, which is segmented by speaker turns. The audio is deleted within 24 hours by a scheduled job.',tok:[C3(1)+65,280],
+  s:legend(150)+[['audio\nupload','code'],['speech-to-text\nlocal','tool'],['segment\nspeaker turns','code']].map((a,i)=>box(C3(i),240,130,80,a[0],a[1])+ar(C3(i)+130,280,C3(i+1),280)).join('')},
+ {c:'A model drafts the SOAP note (subjective, objective, assessment, plan) in an enforced JSON schema, then a second step extracts the medicines mentioned.',tok:[C3(4)+65,280],
+  s:box(C3(3),240,130,80,'draft SOAP\nJSON schema','llm')+ar(C3(3)+130,280,C3(4),280)+box(C3(4),240,130,80,'extract\nmedicines','llm')},
+ {c:'The stock-check tool looks each medicine up in the A-Z formulary and the stock table, returning availability flags. Then interrupt(): the doctor reviews. Nothing has been written to the patient record yet.',tok:[C3(6)+65,280],
+  s:ar(C3(4)+130,280,C3(5),280)+box(C3(5),240,130,80,'stock check\ntool call','tool')+ar(C3(5)+130,280,C3(6),280)+box(C3(6),240,130,80,'interrupt()\ndoctor review','human')+t(C3(6)-40,350,'no timeout → draft parks in the review queue','sb')},
+ {c:'If the doctor rejects, the graph loops back to redraft using their comments. If the doctor signs, the note is stored as version 1 with its edit history, an audit event is written, and the patient is notified.',tok:[C3(7)+65,280],
+  s:ar(C3(6)+130,280,C3(7),280)+box(C3(7),240,130,80,'store + audit\n+ notify','store')+arp(`M${C3(6)+65} 240L${C3(6)+65} 195L${C3(3)+65} 195L${C3(3)+65} 238`,'dash')+t(C3(3)+80,186,'rejected: redraft with the doctor\'s comments','sb')},
+ {c:'A worked example: the doctor said "low-dose statin" without naming a molecule. The draft keeps a bracket, "doctor to specify". The model structures; it never prescribes. A draft that fills in the molecule fails the evaluation set.',tok:false,
+  s:`<g><rect class="nd k-code" x="50" y="400" width="360" height="200"/>${t(66,428,'TRANSCRIPT (synthetic)','kick')}${t(66,456,'Doctor: BP is 138 over 86.\nI\'ll start you on a low-dose\nstatin, plus an ECG and a lipid\npanel before we meet in two weeks.','tx')}</g><g><rect class="nd k-llm" x="450" y="400" width="380" height="200"/>${t(466,428,'DRAFT · 11 SECONDS','kick')}${t(466,456,'P  Statin, low dose [molecule and\n   dose not stated: doctor to specify];\n   ECG; lipid panel; review in 2 weeks','tx')}</g><g><rect class="nd k-human" x="870" y="400" width="360" height="200"/>${t(886,428,'DOCTOR EDITS ONE FIELD','kick')}${t(886,456,'Selects atorvastatin 10 mg nightly.\nStock tool: in stock, Baner\npharmacy, 240 units. Signed after\n70 s. Note v1 saved + audit event.','tx')}</g>`}
+]});
+
+/* 10 ---- architecture */
+const SV=i=>55+i*175;
+S.push({n:'Architecture',k:'10 · THE CONTAINER VIEW',h:'End to end: a request travels through four tiers',steps:[
+ {c:'Top tier: three front ends, the patient app, the doctor console and the front-desk admin. They all enter through one API gateway that does OIDC authentication, rate limits, routing and audit headers.',tok:[195,150],
+  s:['Patient web app','Doctor console','Front desk + admin'].map((n,i)=>box(55+i*300,120,280,58,n,'llm')).join('')+box(55,205,865,48,'API gateway · OIDC auth · rate limits · routing · audit headers','tool')},
+ {c:'Behind the gateway sit the services: agent service (LangGraph), scheduling, records (ingest and RAG), scribe (speech and notes), and audit plus consent. The agent service hosts the three compiled graphs.',tok:[SV(0)+80,320],
+  s:[['Agent service','LangGraph graphs'],['Scheduling\nservice',''],['Records service','ingest + RAG'],['Scribe service','STT + notes'],['Audit + consent','']].map((a,i)=>box(SV(i)-12+(i?0:0),290,165,68,a[0],'tool',a[1])).join('')},
+ {c:'Underneath are the stores: Postgres with pgvector, the object store for PDFs and audio, the queue and workers, the checkpoint store for thread state and memory, and Redis as the fast cache.',tok:[SV(3)+80,430],
+  s:[['Postgres','+ pgvector'],['Object store','PDFs, audio'],['Queue + workers','async ingest'],['Checkpoint store','state + memory'],['Redis cache','30 s TTL etc.']].map((a,i)=>box(SV(i)-12,395,165,68,a[0],'store',a[1])).join('')+box(43,485,865,42,'On every call: trace id · PII scrubber on egress · guardrails in/out · rate limiter · cost meter','code')},
+ {c:'Outside the hospital boundary: the hospital system (read-only), the pharmacy feed, and the LLM API. The dashed line is the rule: only de-identified text crosses it, and a scrubber sits right on the border.',tok:false,
+  s:`<path class="bound" d="M980 110V540"/>${t(1000,104,'OUTSIDE THE BOUNDARY','kick')}`+box(1010,130,220,64,'Hospital system','ext','FHIR R4, read-only')+box(1010,240,220,64,'LLM API','human','de-identified text only')+box(1010,350,220,64,'Pharmacy stock feed','ext','CSV now, API later')+box(900,250,60,44,'scrub','tool')},
+ {c:'Follow one request. The patient app sends it to the gateway, which authenticates and rate-limits it.',tok:[400,228],s:''},
+ {c:'The gateway routes to the agent service, which runs the graph and saves state to the checkpoint store after every node. Any replica can resume because nothing is kept in process memory.',tok:[SV(3)+80,430],s:''},
+ {c:'When a node needs the LLM, the payload goes through the scrubber first. Names, phones and ABHA numbers become tokens; the token map never leaves the building. The answer is re-identified on the way back.',tok:[1120,272],s:''}
+]});
+
+/* 11 ---- memory */
+S.push({n:'Agent memory',k:'11 · MEMORY · THE CORE LEARNING',h:'Memory has four homes, and each has a lifetime',steps:[
+ {c:'Memory in a LangGraph agent is not one thing. First, thread state: the checkpointer saves a snapshot after every node of a single conversation, keyed by thread_id.',tok:[W1(1)+69,205],
+  s:t(48,150,'ONE THREAD, CHECKPOINTED AFTER EVERY NODE','kick')+['intake','red-flag','match','shortlist','interrupt'].map((n,i)=>`<g><circle cx="${140+i*190}" cy="205" r="14" fill="var(--store)"/>${t(140+i*190,245,n,'lb','middle')}${t(140+i*190,265,'c'+(i+1),'sb','middle')}</g>`+(i<4?ar(158+i*190,205,122+(i+1)*190,205):'')).join('')},
+ {c:'This is what makes pause and resume work: if the process dies or another replica picks up the request, it reloads the latest checkpoint and continues. It also gives replay and time-travel for debugging. Kept 30 days, then purged.',tok:[140+4*190,205],
+  s:`<g><rect class="nd k-human" x="900" y="170" width="330" height="80"/>${t(918,200,'⏸  waiting for the patient...','lb')}${t(918,226,'resume(slot_id) on any replica','sb')}</g>`},
+ {c:'Second, long-term store: a key-value store keyed by patient, readable from any thread. It holds things that outlive a conversation, like preferred language and usual clinic. In a hackathon you start with the in-memory store and swap it for Postgres.',
+  s:card(48,330,285,250,'Long-term store','key-value, keyed by patient\n\nExample:\npreferred language,\nusual clinic\n\nExpires: when the\npatient changes it','tool')},
+ {c:'Third, retrieval memory: pgvector chunks of the patient\'s reports with citations, kept with the document and under consent. Fourth, the operational cache in Redis for fast, short-lived facts such as slot availability.',
+  s:card(349,330,285,250,'Retrieval memory','pgvector chunks\n\nExample:\nreport contents,\nwith page citations\n\nExpires: with the\ndocument, under consent','llm')+card(650,330,285,250,'Operational cache','Redis\n\nExample:\nslot availability\n\nExpires: after 30\nseconds','store')},
+ {c:'Rule of thumb: the checkpointer remembers where this conversation is, the store remembers who the patient is, retrieval remembers what the documents say, and the cache remembers what was true a moment ago. Start with the in-memory versions, then move to Postgres once the graph works.',
+  s:card(951,330,280,250,'Hackathon path','Dev: in-memory\ncheckpointer + store\n\nNext: Postgres\ncheckpointer + store\n\nAdd: Redis TTL cache','human')}
+]});
+
+/* 12 ---- caching */
+S.push({n:'Caching',k:'12 · CACHING STRATEGIES',h:'Three caches, each with a reason and an expiry',steps:[
+ {c:'Cache 1: slot availability, kept for 30 seconds. A lookup checks Redis first. A hit returns immediately; a miss reads Postgres and stores the answer with a 30-second TTL.',tok:false,
+  s:t(48,150,'1 · SLOT AVAILABILITY  (TTL 30 s)','kick')+box(48,170,170,64,'shortlist node','tool')+ar(218,202,300,202)+box(300,170,170,64,'Redis lookup','store')+ar(470,185,570,185,'hot')+box(570,160,200,50,'hit → return','store')+ar(470,222,570,228)+box(570,222,200,50,'miss → Postgres','store','then write with TTL')},
+ {c:'Because availability can be stale, booking never trusts the cache. The final reserve is one database transaction with a unique constraint on the slot and an idempotency key. The cache speeds up showing options; the database decides who gets the slot.',tok:false,
+  s:box(810,160,420,110,'booking = DB transaction','alert','unique slot_id + idempotency key\ncache is never the source of truth')},
+ {c:'Cache 2: embeddings by content hash. Hash each chunk, look it up, and only call the embedding model for chunks you have never seen. Re-uploads and repeated boilerplate become free.',tok:false,
+  s:t(48,330,'2 · EMBEDDINGS BY CONTENT HASH','kick')+box(48,350,170,64,'chunk text','code')+ar(218,382,300,382)+box(300,350,170,64,'sha256(text)','code')+ar(470,382,570,382)+box(570,350,200,64,'seen before?','store')+ar(770,366,860,366,'hot')+t(870,372,'yes → reuse vector','tm')+ar(770,398,860,420)+t(870,432,'no → embed, store','tm')},
+ {c:'Cache 3: prompt prefixes. Put the long, unchanging part first (system instruction, guardrails, schema) and the patient-specific part last, so providers that support prefix caching can reuse the shared part. Stock flags always show their age, and "unknown" when stale.',tok:false,
+  s:t(48,500,'3 · PROMPT PREFIX  (where the provider supports it)','kick')+box(48,520,380,70,'system + guardrails + schema','store','identical every call → cacheable')+box(428,520,380,70,'patient context + question','llm','changes every call')+box(850,520,380,70,'Stale stock?','human','show stock age on every flag')}
+]});
+
+/* 13 ---- guardrails */
+S.push({n:'Guardrails',k:'13 · SAFETY, CONSENT, AUDIT',h:'Guardrails are code and tests, not sentences in a prompt',steps:[
+ {c:'Three layers. Input: scrub identifiers from anything leaving, scan uploaded text for injected instructions, and take scope from the auth context, never from the prompt.',
+  s:card(48,140,385,240,'INPUT LAYER','• Scrub identifiers before\n   anything leaves\n• Scan uploads for injected\n   instructions\n• Scope from the auth context,\n   not from the prompt','tool')},
+ {c:'Model layer: constrain output to a schema, forbid diagnosis and dosing in the system instruction, and give each graph only the tools it needs. Output layer: check every citation against retrieved chunks, escalate red flags, and require a human signature for any clinical act.',
+  s:card(448,140,385,240,'MODEL LAYER','• Output must match a schema\n• No diagnosis or dosing\n• Each graph gets only the\n   tools it needs','llm')+card(848,140,385,240,'OUTPUT LAYER','• Every citation resolves to a\n   retrieved chunk\n• Red flags escalate\n• Clinical acts need a human\n   signature','human')},
+ {c:'Consent is a row, not a checkbox: grantee, scope, purpose and expiry, checked on every read. A caregiver sees a record only while consent is valid. Every read writes an audit event with actor, role, purpose, record and time.',
+  s:t(48,424,'CONSENT TABLE  →  checked on every read  →  AUDIT EVENT','kick')+box(48,444,330,70,'consent','store','grantee · scope · purpose · expires_at')+ar(378,479,470,479,'hot')+box(470,444,330,70,'record read','code','allowed only while valid')+ar(800,479,892,479,'hot')+box(892,444,340,70,'audit_event','store','actor · role · purpose · record · time')},
+ {c:'The proof is red-team tests. A PDF with hidden instructions, a request for another patient\'s data, a request for a dose. Each test must fail when its guardrail is removed. Targets: red-flag recall 100%, scope leaks zero.',
+  s:`<g><rect class="nd k-alert" x="48" y="545" width="1184" height="110"/>${t(66,575,'RED-TEAM SET · ZERO TOLERANCE','kick')}${t(66,604,'Injected PDF · another patient\'s question · dose or diagnosis request · 1,000 scripted bookings (only 20 succeed)','tx')}${t(66,630,'Signed notes are immutable: an edit creates a new version with a hash in the audit event.','tx')}</g>`}
+]});
+
+/* 14 ---- requirements */
+const ep=[['E1 Find my doctor','Priya','Free text → one specialty + 3 doctors with next slot in 4 s. Red-flag phrase ends the flow with emergency guidance and a logged hand-off.'],
+['E2 Book and manage','Priya, Meena','Booking is idempotent under retries, confirms by SMS; the front desk can see and override any booking.'],
+['E3 My records','Priya','A text PDF is stored against the patient in 60 s with visible status; a caregiver sees it only while consent is valid.'],
+['E4 Ask my record','Priya','Every answer cites document and page, refuses out-of-scope questions, hands off to a doctor for diagnosis or dose.'],
+['E5 Scribe','Dr. Rao, Imran','Transcript becomes a SOAP draft with medicines flagged against stock; saved only with signature and edit history.'],
+['E6 Platform','Kavita','Every record read writes an audit event; consent has scope and expiry; identified data never reaches an external API.']];
+const nf=[['p95 triage turn','< 4 s'],['p95 record answer','< 8 s'],['p95 note draft','< 20 s'],['Availability','99.5%'],['Bookings w/o a call','≥ 70%'],['Median time to book','< 3 min'],['Red-flag recall','100%'],['Specialty accuracy','≥ 85%'],['Answer faithfulness','≥ 0.9'],['Scope leaks','0']];
+S.push({n:'Requirements',k:'14 · WHAT THE CLIENT WILL TEST',h:'Six epics and the numbers the demo must show',steps:[
+ {c:'Six epics, each tied to a persona and written so a test can pass or fail it. Find my doctor and Book and manage are the patient-facing front door.',s:[0,1].map(i=>card(48+i*400,130,385,150,ep[i][0]+'  ·  '+ep[i][1],ep[i][2].replace(/(.{1,40})(\s|$)/g,'$1\n').trim(),'llm','lb')).join('')},
+ {c:'My records, and Ask my record: upload and ingest in 60 seconds, and cited, scope-guarded answers.',s:[2,3].map(i=>card(48+(i-2)*400,130+170,385,150,ep[i][0]+'  ·  '+ep[i][1],ep[i][2].replace(/(.{1,40})(\s|$)/g,'$1\n').trim(),'store','lb')).join('')},
+ {c:'Scribe is the doctor\'s epic: persisted only with signature. Platform is the compliance officer\'s: audit, consent and data residency.',s:[4,5].map(i=>card(850,130+(i-4)*170,385,150,ep[i][0]+'  ·  '+ep[i][1],ep[i][2].replace(/(.{1,40})(\s|$)/g,'$1\n').trim(),i==4?'human':'tool','lb')).join('')},
+ {c:'The numbers the demo must put on screen. Latency: triage under 4 s, record answer under 8 s, note draft under 20 s at p95. Quality: 100% red-flag recall, 85% specialty accuracy, 0.9 faithfulness, zero scope leaks. A missed target is reported with the figure reached and why, never dropped.',
+  s:nf.map((a,i)=>tile(30+(i%5)*244,500+Math.floor(i/5)*100,228,86,a[1],a[0],i>=6?'alert':'tool')).join('')}
+]});
+
+/* 15 ---- hackathon */
+const hp=[['Setup + data',0,1,'store','• Repo, FastAPI skeleton\n• docker compose:\n   Postgres+pgvector, Redis\n• Ollama model pulled\n• Small synthetic set:\n   ~30 doctors, slots,\n   10 PDFs, 20 eval cases'],
+['W1 Find my doctor',1,3.5,'llm','• Red-flag rules (code)\n• Specialty match (LLM)\n• Shortlist tools\n• interrupt() + resume\n• Start with in-memory\n   checkpointer, then\n   Postgres'],
+['W2 My records',3.5,6,'tool','• Ingest: parse, chunk,\n   embed\n• pgvector retrieval\n• Patient filter in SQL\n• Citations\n• Embedding cache by hash'],
+['W3 Scribe',6,8,'human','• Local STT on a sample\n   recording\n• SOAP draft in schema\n• Stock tool (CSV adapter)\n• Doctor interrupt, sign'],
+['Memory + supervisor',8,9,'store','• Long-term store\n   (language, clinic)\n• Redis 30 s slot cache\n• Supervisor graph routes\n   chat to W1 / W2'],
+['Evals + demo',9,10,'alert','• Red-flag recall 100%\n• Scope-leak red-team\n• Trace + cost per run\n• Demo, AI-collab log']];
+const hb=i=>{const p=hp[i],x=48+p[1]*118,w=(p[2]-p[1])*118-6;return box(x,130,w,70,p[0].replace(/ \+ /,' +\n'),p[3],(p[2]-p[1])+'h')+(i<5?'':'')};
+const hc=i=>{const p=hp[i];return `<g><rect class="nd k-${p[3]}" x="${48+i*196}" y="225" width="186" height="270"/>${t(60+i*196,252,'HOUR '+p[1]+' → '+p[2],'kick')}${t(60+i*196,278,p[4],'tm')}</g>`};
+S.push({n:'10-hour plan',k:'15 · YOUR HACKATHON CUT',h:'The 10-hour build: what to ship and in what order',steps:[
+ ...hp.map((p,i)=>({c:[
+  'The pack sizes the Core tier at about 38 hours, so a 10-hour sprint is a cut. Hour 0 to 1: scaffold the repo, start Postgres with pgvector and Redis in Docker, pull an Ollama model, and generate a small synthetic data set plus about 20 eval cases.',
+  'Hours 1 to 3.5: Workflow 1. Red-flag rules in code, specialty match with the model, shortlist tools, and interrupt() with resume. Use the in-memory checkpointer first so you learn the graph, then swap to the Postgres checkpointer.',
+  'Hours 3.5 to 6: Workflow 2. Ingest a few PDFs, store chunks in pgvector, and answer with citations. Do the patient filter in SQL from the start. This is where memory type 3 (retrieval) is learned.',
+  'Hours 6 to 8: Workflow 3, the scribe, on a recorded sample. Local speech-to-text, SOAP draft, stock check against a CSV, and the doctor interrupt. If time runs short, this is the first thing to shrink.',
+  'Hours 8 to 9: the multi-agent and memory payoff. A supervisor graph routes a chat message to W1 or W2 as sub-graphs, a long-term store keeps language and clinic per patient, and Redis caches slot availability for 30 seconds. The supervisor is your addition for the learning goal.',
+  'Hours 9 to 10: evals and the demo. Run red-flag recall and the scope-leak test, capture traces and cost per run, and record the demo: a booking, a cited answer and, if W3 landed, a signed note.'][i],
+  tok:false,s:hb(i)+hc(i)})),
+ {c:'Local stack: Ollama for the LLM, a local speech-to-text engine (the pack names faster-whisper) for dictation, optional local TTS for test audio, FastAPI, Postgres with pgvector, and Redis. MCP is out for now; in the pack it is an Architect-tier extension.',tok:false,
+  s:hp.map((p,i)=>hb(i)).join('')+[['Ollama','LLM, local first'],['Local STT','faster-whisper'],['LangGraph','3 graphs + supervisor'],['Postgres + pgvector','state + vectors'],['Redis','TTL cache']].map((a,i)=>box(48+i*238,530,222,64,a[0],'tool',a[1])).join('')+box(48,615,1160,50,'Not now: MCP server · load test at 1,400/h · ABHA linking · Hindi and Marathi · on-prem hybrid ADR','ext')}
+]});
+
+/* ---------- engine ---------- */
+const svg=document.getElementById('stage'),ct=document.getElementById('ct'),cn=document.getElementById('cn'),pb=document.getElementById('pb'),bplay=document.getElementById('bplay');
+let si=0,st=0,playing=!matchMedia('(prefers-reduced-motion:reduce)').matches,timer=null,speed=1,builtFor=-1;
+const defs='<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker></defs>';
+function build(i){const sc=S[i];
+  svg.innerHTML=defs+`<g>${t(48,52,sc.k,'kick')}${t(48,92,sc.h,'ttl')}</g>`+sc.steps.map((s,j)=>`<g class="e" data-s="${j}">${s.s||''}</g>`).join('')+'<g id="tok"><circle r="9"/></g>';
+  builtFor=i}
+function apply(){const sc=S[si];
+  svg.querySelectorAll('.e').forEach(g=>{const j=+g.dataset.s;g.classList.toggle('on',j<=st);g.classList.toggle('cur',j==st)});
+  let tk,vis=false;for(let j=0;j<=st;j++){const v=sc.steps[j].tok;if(v!==undefined){tk=v;}}
+  const tg=svg.querySelector('#tok');
+  if(tk){tg.style.transform=`translate(${tk[0]}px,${tk[1]}px)`;tg.style.opacity=1}else tg.style.opacity=0;
+  cn.textContent=`${si+1}/${S.length} · ${sc.n} · step ${st+1}/${sc.steps.length}`;ct.textContent=sc.steps[st].c;
+  document.querySelectorAll('#chips button').forEach((b,i)=>b.classList.toggle('on',i==si));
+}
+function go(i,s,anim){
+  const rebuild=i!==builtFor;si=i;st=s;
+  if(rebuild){build(i);svg.classList.add('nt');apply();void svg.getBoundingClientRect();
+    if(anim){svg.classList.remove('nt');svg.querySelectorAll('.e').forEach(g=>g.classList.remove('on'));requestAnimationFrame(()=>requestAnimationFrame(apply))}
+    else requestAnimationFrame(()=>svg.classList.remove('nt'))}
+  else if(anim)apply();
+  else{svg.classList.add('nt');apply();void svg.getBoundingClientRect();svg.classList.remove('nt')}
+  sched()}
+function dur(){const s=S[si].steps[st];return Math.max(4500,s.c.length*70)/speed}
+function sched(){clearTimeout(timer);pb.style.transition='none';pb.style.width='0';
+  if(!playing){bplay.textContent='▶ Play';return}
+  bplay.textContent='⏸ Pause';const d=dur();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{pb.style.transition=`width ${d}ms linear`;pb.style.width='100%'}));
+  timer=setTimeout(next,d)}
+function next(){if(st<S[si].steps.length-1)go(si,st+1,true);else if(si<S.length-1)go(si+1,0,true);else{playing=false;sched()}}
+function prev(){if(st>0)go(si,st-1,false);else if(si>0)go(si-1,S[si-1].steps.length-1,false)}
+function scene(d){const n=Math.min(S.length-1,Math.max(0,si+d));go(n,0,true)}
+document.getElementById('bn').onclick=next;document.getElementById('bp').onclick=prev;
+document.getElementById('bns').onclick=()=>scene(1);document.getElementById('bps').onclick=()=>scene(-1);
+bplay.onclick=()=>{playing=!playing;if(playing&&si==S.length-1&&st==S[si].steps.length-1)go(0,0,true);else sched()};
+document.getElementById('spd').onchange=e=>{speed=+e.target.value;sched()};
+document.addEventListener('keydown',e=>{if(e.target.tagName=='SELECT')return;
+  if(e.key==' '){e.preventDefault();bplay.click()}else if(e.key=='ArrowRight')next();else if(e.key=='ArrowLeft')prev();else if(e.key==']')scene(1);else if(e.key=='[')scene(-1)});
+const chips=document.getElementById('chips');
+S.forEach((sc,i)=>{const b=document.createElement('button');b.textContent=(i+1)+'. '+sc.n;b.onclick=()=>go(i,0,true);chips.appendChild(b)});
+go(0,0,true);
+</script>

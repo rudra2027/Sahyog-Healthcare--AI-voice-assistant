@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sahyog · Doctor portal</title>
+  <meta name="robots" content="noindex">
+  <script>document.documentElement.classList.add("js");</script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230a7ea4'/%3E%3Cpath d='M16 8v16M8 16h16' stroke='white' stroke-width='3.4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/styles.css?v=6">
+  <link rel="stylesheet" href="/static/portal.css?v=6">
+  <link rel="stylesheet" href="/static/bot.css?v=6">
+</head>
+<body data-portal="doctor">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cross" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-steth" viewBox="0 0 24 24"><path d="M6 3v6a4 4 0 0 0 8 0V3M10 13v2a5 5 0 0 0 10 0v-1"/><circle cx="20" cy="12" r="2"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+</svg>
+
+<!-- Shown to anyone who is not signed in. The page behind it stays hidden. -->
+<div class="gate" id="gate" hidden>
+  <div class="card">
+    <span class="logo"><svg class="icon"><use href="#i-cross"/></svg></span>
+    <h1>Doctor portal</h1>
+    <p>Sign in with your staff account to see your schedule and your patients.</p>
+    <button class="btn" id="gateBtn" type="button">Sign in</button>
+  </div>
+</div>
+
+<header class="nav" id="nav">
+  <a class="brand" href="/doctor"><span class="logo"><svg class="icon"><use href="#i-cross"/></svg></span>Sahyog <small style="font-weight:500;color:var(--muted)">Doctors</small></a>
+  <nav class="nav-links" aria-label="Sections"><a href="#schedule">Schedule</a><a href="#note">Consultation note</a></nav>
+  <div class="nav-tools"></div>
+</header>
+
+<main>
+  <div class="portal-head">
+    <p class="eyebrow" id="today"></p>
+    <h1 id="hello">Welcome</h1>
+    <p id="summary">Loading your day...</p>
+  </div>
+  <div class="tiles wide" id="tiles"></div>
+
+  <section class="section section-tight" id="schedule">
+    <div class="portal-grid">
+      <div class="card panel reveal">
+        <h3>Your appointments</h3>
+        <div class="tabs" id="dayTabs" role="tablist">
+          <button class="tab on" data-day="today">Today</button><button class="tab" data-day="tomorrow">Tomorrow</button><button class="tab" data-day="">All upcoming</button>
+        </div>
+        <div class="appt-list" id="apptList"></div>
+      </div>
+      <div class="stack">
+        <div class="card panel pcard reveal" style="--d:100ms" id="patientPanel">
+          <div class="placeholder"><svg class="icon"><use href="#i-user"/></svg><div>Choose an appointment to see the patient's details and reports.</div></div>
+        </div>
+        <div class="card panel reveal" style="--d:160ms">
+          <h3>New from your patients</h3>
+          <ul class="doclist" id="newMessages"></ul>
+          <ul class="doclist" id="newReports"><li style="color:var(--muted)">Loading...</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section soft" id="note">
+    <div class="section-head reveal">
+      <p class="eyebrow">Consultation note</p>
+      <h2>A note to sign, not to type.</h2>
+      <p class="lead" id="noteLead">Open a patient first. Then dictate or paste the consultation. The draft quotes only what was said, flags anything missing, and waits for your signature.</p>
+    </div>
+    <div class="scribe-grid">
+      <div class="card panel reveal">
+        <h3>Consultation <span class="pill info" id="noteFor" hidden></span></h3>
+        <textarea class="field" id="transcript" aria-label="Consultation transcript" placeholder="Doctor: ...&#10;Patient: ..."></textarea>
+        <div class="actions">
+          <button class="btn small ghost" id="sampleBtn">Load sample</button>
+          <button class="btn small ghost" id="dictateBtn"><svg class="icon"><use href="#i-mic"/></svg>Dictate</button>
+          <button class="btn small" id="draftBtn">Draft the note</button>
+        </div>
+        <h3 style="margin-top:28px">Your medicine preferences</h3>
+        <div id="lessons"><p style="color:var(--muted)">Nothing yet. When you pick the same medicine for a drug class twice, I will offer it as a suggestion next time.</p></div>
+      </div>
+      <div class="card panel reveal" style="--d:120ms">
+        <h3>Draft</h3>
+        <div id="draftOut"><p style="color:var(--muted)">The draft appears here for your review.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><p>Sahyog Care Companion is a learning project. All people, hospitals and data are fictional.</p></footer>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="/static/auth.js?v=6"></script>
+<script src="/static/bot.js?v=6"></script>
+<script src="/static/portal.js?v=6"></script>
+<script src="/static/doctor.js?v=6"></script>
+</body>
+</html>
